@@ -70,6 +70,8 @@ public class Config {
     public static volatile String NamePattern;
     public static volatile boolean DeathStateQuitRecordLocation;
     public static volatile boolean FloodgatePrefixProtect;
+    public static volatile boolean LoopbackLoginBypass;
+    public static volatile boolean BeforeLoginAllowChat;
 
     public static void load() {
       BukkitConfigManager cm = plugin.getConfigManager();
@@ -92,6 +94,8 @@ public class Config {
       SpawnLocation = cm.getBukkitSpawnLocation();
       DeathStateQuitRecordLocation = cm.isDeathStateQuitRecordLocation();
       FloodgatePrefixProtect = cm.isFloodgatePrefixProtect();
+      LoopbackLoginBypass = cm.isLoopbackLoginBypass();
+      BeforeLoginAllowChat = cm.isBeforeLoginAllowChat();
     }
 
     public static void save() {
@@ -113,6 +117,8 @@ public class Config {
       cm.set(ConfigConstants.Path.SETTINGS_DEATH_STATE_QUIT_RECORD, DeathStateQuitRecordLocation);
       cm.set(ConfigConstants.Path.BEDROCK_FLOODGATE_PREFIX, FloodgatePrefixProtect);
       cm.set(ConfigConstants.Path.SETTINGS_NAME_PATTERN, NamePattern);
+      cm.set(ConfigConstants.Path.SETTINGS_LOOPBACK_LOGIN_BYPASS, LoopbackLoginBypass);
+      cm.set(ConfigConstants.Path.SETTINGS_BEFORE_LOGIN_ALLOW_CHAT, BeforeLoginAllowChat);
 
       if (CommandWhiteList != null && !CommandWhiteList.isEmpty()) {
         cm.getMainConfig()
@@ -159,6 +165,7 @@ public class Config {
     public static String REGISTER_MORE;
     public static String BEDROCK_LOGIN_BYPASS;
     public static String LOGIN_WITH_THE_SAME_IP;
+    public static String LOOPBACK_LOGIN_BYPASS;
 
     public static void load() {
       LOGIN_REQUEST = MessageKey.LOGIN_REQUEST.get();
@@ -193,6 +200,7 @@ public class Config {
       REGISTER_MORE = MessageKey.REGISTER_MORE.get();
       BEDROCK_LOGIN_BYPASS = MessageKey.BEDROCK_LOGIN_BYPASS.get();
       LOGIN_WITH_THE_SAME_IP = MessageKey.LOGIN_WITH_THE_SAME_IP.get();
+      LOOPBACK_LOGIN_BYPASS = MessageKey.LOOPBACK_LOGIN_BYPASS.get();
     }
   }
 

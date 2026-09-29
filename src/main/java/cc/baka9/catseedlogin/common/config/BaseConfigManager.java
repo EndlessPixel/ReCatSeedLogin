@@ -238,6 +238,16 @@ public abstract class BaseConfigManager
   }
 
   @Override
+  public boolean isLoopbackLoginBypass() {
+    return mainConfig.getBoolean(ConfigConstants.Path.SETTINGS_LOOPBACK_LOGIN_BYPASS, false);
+  }
+
+  @Override
+  public boolean isBeforeLoginAllowChat() {
+    return mainConfig.getBoolean(ConfigConstants.Path.SETTINGS_BEFORE_LOGIN_ALLOW_CHAT, false);
+  }
+
+  @Override
   public List<Pattern> getCommandWhiteList() {
     List<String> patterns =
         mainConfig.getStringList(ConfigConstants.Path.SETTINGS_COMMAND_WHITELIST);
