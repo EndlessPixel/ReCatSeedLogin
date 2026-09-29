@@ -75,6 +75,10 @@ public class ConfigConstants {
     public static final String SETTINGS_DEATH_STATE_QUIT_RECORD =
         "settings.death-state-quit-record-location";
     public static final String SETTINGS_COMMAND_WHITELIST = "settings.command-white-list";
+    public static final String SETTINGS_LOOPBACK_LOGIN_BYPASS =
+        "settings.loopback-login-bypass";
+    public static final String SETTINGS_BEFORE_LOGIN_ALLOW_CHAT =
+        "settings.before-login-allow-chat";
 
     public static final String BEDROCK_LOGIN_BYPASS = "bedrock.login-bypass";
     public static final String BEDROCK_FLOODGATE_PREFIX = "bedrock.floodgate-prefix-protect";

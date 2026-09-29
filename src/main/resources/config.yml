@@ -30,6 +30,10 @@ settings:
   auto-kick: 120
   # 死亡状态退出游戏是否记录退出位置
   death-state-quit-record-location: true
+  # 本地回环地址(127.0.0.1 / ::1)连接时跳过登录
+  loopback-login-bypass: false
+  # 登录前是否允许发消息
+  before-login-allow-chat: false
   # 游戏名正则表达式
   name-pattern: "^\\w+$"
   # 登录前允许执行的指令 (支持正则表达式)

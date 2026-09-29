@@ -63,7 +63,8 @@ public class LoginPlayerHelper {
 
   private static boolean canBypassLogin(String name) {
     return (Config.Settings.BedrockLoginBypass && isFloodgatePlayer(name))
-        || (Config.Settings.LoginwiththesameIP && recordCurrentIP(name));
+        || (Config.Settings.LoginwiththesameIP && recordCurrentIP(name))
+        || (Config.Settings.LoopbackLoginBypass && isLoopbackPlayer(name));
   }
 
   public static boolean isRegister(String name) {
@@ -130,6 +131,17 @@ public class LoginPlayerHelper {
     } catch (Exception e) {
       return new ArrayList<>();
     }
+  }
+
+  /** 判断玩家是否从本地回环地址(127.0.0.1 / ::1 / localhost)连接。 */
+  public static boolean isLoopbackPlayer(String name) {
+    Player player = Bukkit.getPlayerExact(name);
+    return player != null && isLoopbackPlayer(player);
+  }
+
+  public static boolean isLoopbackPlayer(Player player) {
+    String ip = getPlayerIP(player);
+    return ip != null && ValidationUtil.isLoopbackAddress(ip);
   }
 
   public static boolean isFloodgatePlayer(String name) {

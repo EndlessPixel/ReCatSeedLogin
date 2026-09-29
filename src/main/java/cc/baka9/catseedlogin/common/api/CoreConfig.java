@@ -39,6 +39,12 @@ public interface CoreConfig {
 
   boolean isFloodgatePrefixProtect();
 
+  /** 本地回环地址(127.0.0.1 / ::1)连接时是否跳过登录。 */
+  boolean isLoopbackLoginBypass();
+
+  /** 登录前是否允许发消息。 */
+  boolean isBeforeLoginAllowChat();
+
   List<Pattern> getCommandWhiteList();
 
   interface SpawnLocation {

@@ -28,6 +28,8 @@ public class CommandCatSeedLogin implements CommandExecutor {
     return reload(sender, args)
         || setPwd(sender, args)
         || delPlayer(sender, args)
+        || loopbackLoginBypass(sender, args)
+        || beforeLoginAllowChat(sender, args)
         || setIpCountLimit(sender, args)
         || limitChineseID(sender, args)
         || bedrockLoginBypass(sender, args)
@@ -152,6 +154,28 @@ public class CommandCatSeedLogin implements CommandExecutor {
             () -> Config.Settings.LoginwiththesameIP,
             v -> Config.Settings.LoginwiththesameIP = v,
             "同IP玩家登录跳过"));
+  }
+
+  private boolean loopbackLoginBypass(CommandSender sender, String[] args) {
+    return toggle(
+        sender,
+        args,
+        "loopbackLoginBypass",
+        new BoolSetting(
+            () -> Config.Settings.LoopbackLoginBypass,
+            v -> Config.Settings.LoopbackLoginBypass = v,
+            "本地回环地址登录跳过"));
+  }
+
+  private boolean beforeLoginAllowChat(CommandSender sender, String[] args) {
+    return toggle(
+        sender,
+        args,
+        "beforeLoginAllowChat",
+        new BoolSetting(
+            () -> Config.Settings.BeforeLoginAllowChat,
+            v -> Config.Settings.BeforeLoginAllowChat = v,
+            "登陆之前允许发消息"));
   }
 
   // ---- Number Settings ----
