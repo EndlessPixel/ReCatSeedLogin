@@ -228,6 +228,7 @@ ReCatSeedLogin/
 | `/catseedlogin LoginwiththesameIP` | 切换同IP免登录开关 | 关闭 |
 | `/catseedlogin loopbackLoginBypass` | 切换本地回环地址免登录开关 | 关闭 |
 | `/catseedlogin beforeLoginAllowChat` | 切换登录前允许发消息开关 | 关闭 |
+| `/catseedlogin blindingBeforeLogin` | 切换登录前失明效果开关 | 关闭 |
 | `/catseedlogin beforeLoginNoDamage` | 切换登录前免伤开关 | 开启 |
 | `/catseedlogin afterLoginBack` | 切换登录后返回开关 | 开启 |
 | `/catseedlogin canTpSpawnLocation` | 切换强制登录点开关 | 开启 |
@@ -265,6 +266,7 @@ settings:
   death-state-quit-record-location: true  # 死亡状态退出是否记录位置
   loopback-login-bypass: false     # 本地回环地址(127.0.0.1/::1)连接时跳过登录
   before-login-allow-chat: false   # 登录前是否允许发消息
+  blinding-before-login: false     # 登录前给未登录玩家施加失明效果
   name-pattern: "^\\w+$"           # 游戏名正则表达式
   command-white-list:              # 登录前允许执行的指令 (支持正则)
     - "/(?i)l(ogin)?(\\z| .*)"
