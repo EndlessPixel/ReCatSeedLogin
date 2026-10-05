@@ -7,8 +7,8 @@ import cc.baka9.catseedlogin.bukkit.database.*;
 import cc.baka9.catseedlogin.bukkit.object.LoginPlayerHelper;
 import cc.baka9.catseedlogin.bukkit.task.Task;
 import cc.baka9.catseedlogin.common.i18n.I18n;
+import cc.baka9.catseedlogin.common.util.TabCompleteUtil;
 import cn.handyplus.lib.adapter.HandySchedulerUtil;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import org.bukkit.Bukkit;
@@ -60,6 +60,7 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     }
 
     getServer().getPluginManager().registerEvents(new Listeners(), this);
+    getServer().getPluginManager().registerEvents(new BlindingListeners(), this);
 
     if (configManager.isEmptyBackpack()) {
       try {
@@ -102,7 +103,9 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     cmd.setExecutor(new CommandLogin());
     cmd.setTabCompleter(
         (commandSender, command, s, args) ->
-            args.length == 1 ? Collections.singletonList("密码") : new ArrayList<>(0));
+            args.length == 1
+                ? TabCompleteUtil.filter(Collections.singletonList("密码"), args[0])
+                : Collections.emptyList());
   }
 
   private void registerRegisterCommand() {
@@ -111,7 +114,9 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     cmd.setExecutor(new CommandRegister());
     cmd.setTabCompleter(
         (commandSender, command, s, args) ->
-            args.length == 1 ? Collections.singletonList("密码 重复密码") : new ArrayList<>(0));
+            args.length == 1
+                ? TabCompleteUtil.filter(Collections.singletonList("密码 重复密码"), args[0])
+                : Collections.emptyList());
   }
 
   private void registerChangePasswordCommand() {
@@ -120,7 +125,9 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     cmd.setExecutor(new CommandChangePassword());
     cmd.setTabCompleter(
         (commandSender, command, s, args) ->
-            args.length == 1 ? Collections.singletonList("旧密码 新密码 重复新密码") : new ArrayList<>(0));
+            args.length == 1
+                ? TabCompleteUtil.filter(Collections.singletonList("旧密码 新密码 重复新密码"), args[0])
+                : Collections.emptyList());
   }
 
   private void registerBindEmailCommand() {
@@ -130,14 +137,14 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     bindemail.setTabCompleter(
         (commandSender, command, s, args) -> {
           if (args.length == 1) {
-            return Arrays.asList("set 需要绑定的邮箱", "verify 邮箱验证码");
+            return TabCompleteUtil.filter(Arrays.asList("set", "verify"), args[0]);
           }
           if (args.length == 2) {
-            if (args[0].equals("set")) {
-              return Collections.singletonList("需要绑定的邮箱");
+            if ("set".equalsIgnoreCase(args[0])) {
+              return TabCompleteUtil.filter(Collections.singletonList("需要绑定的邮箱"), args[1]);
             }
-            if (args[0].equals("verify")) {
-              return Collections.singletonList("邮箱获取的验证码");
+            if ("verify".equalsIgnoreCase(args[0])) {
+              return TabCompleteUtil.filter(Collections.singletonList("邮箱获取的验证码"), args[1]);
             }
           }
           return Collections.emptyList();
@@ -151,13 +158,13 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
     resetpassword.setTabCompleter(
         (commandSender, command, s, args) -> {
           if (args.length == 1) {
-            return Arrays.asList("forget", "re 验证码 新密码");
+            return TabCompleteUtil.filter(Arrays.asList("forget", "re"), args[0]);
           }
-          if (args.length == 2 && "re".equals(args[0])) {
-            return Collections.singletonList("验证码 新密码");
+          if (args.length == 2 && "re".equalsIgnoreCase(args[0])) {
+            return TabCompleteUtil.filter(Collections.singletonList("验证码"), args[1]);
           }
-          if (args.length == 3 && "re".equals(args[0])) {
-            return Collections.singletonList("新密码");
+          if (args.length == 3 && "re".equalsIgnoreCase(args[0])) {
+            return TabCompleteUtil.filter(Collections.singletonList("新密码"), args[2]);
           }
           return Collections.emptyList();
         });
@@ -166,7 +173,9 @@ public class CatSeedLogin extends JavaPlugin implements Listener {
   private void registerCatSeedLoginCommand() {
     PluginCommand cmd = getServer().getPluginCommand("catseedlogin");
     if (cmd == null) return;
-    cmd.setExecutor(new CommandCatSeedLogin());
+    CommandCatSeedLogin executor = new CommandCatSeedLogin();
+    cmd.setExecutor(executor);
+    cmd.setTabCompleter(executor);
   }
 
   @EventHandler

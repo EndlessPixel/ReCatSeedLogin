@@ -1,12 +1,13 @@
 package cc.baka9.catseedlogin.velocity;
 
 import cc.baka9.catseedlogin.common.i18n.MessageKey;
+import cc.baka9.catseedlogin.common.util.TabCompleteUtil;
 import cc.baka9.catseedlogin.velocity.config.VelocityConfigManager;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.ProxyServer;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
@@ -14,6 +15,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.slf4j.Logger;
 
 public class Commands implements SimpleCommand {
+
+  public static final String PERMISSION = "catseedlogin.admin";
+
+  /** 所有管理子命令，执行分发与 TAB 补全共用同一份数据源。 */
+  public static final List<String> SUB_COMMANDS =
+      Collections.unmodifiableList(Arrays.asList("reload", "status", "list"));
 
   private final VelocityConfigManager configManager;
   private final ProxyServer proxyServer;
@@ -31,7 +38,7 @@ public class Commands implements SimpleCommand {
     String[] args = invocation.arguments();
 
     try {
-      if (!source.hasPermission("catseedlogin.admin")) {
+      if (!source.hasPermission(PERMISSION)) {
         source.sendMessage(Component.text(MessageKey.NO_PERMISSION.get()));
         return;
       }
@@ -63,13 +70,18 @@ public class Commands implements SimpleCommand {
 
   @Override
   public CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
-    String[] args = invocation.arguments();
-
-    if (args.length <= 1) {
-      return CompletableFuture.completedFuture(Arrays.asList("reload", "status", "list"));
+    CommandSource source = invocation.source();
+    if (!source.hasPermission(PERMISSION)) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
     }
 
-    return CompletableFuture.completedFuture(new ArrayList<>());
+    String[] args = invocation.arguments();
+    if (args.length <= 1) {
+      return CompletableFuture.completedFuture(
+          TabCompleteUtil.filter(SUB_COMMANDS, TabCompleteUtil.lastArg(args)));
+    }
+
+    return CompletableFuture.completedFuture(Collections.emptyList());
   }
 
   private void sendHelp(CommandSource source) {

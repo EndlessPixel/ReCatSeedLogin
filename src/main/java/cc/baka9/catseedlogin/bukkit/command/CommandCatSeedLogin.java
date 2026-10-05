@@ -11,7 +11,14 @@ import cc.baka9.catseedlogin.bukkit.object.LoginPlayer;
 import cc.baka9.catseedlogin.bukkit.object.LoginPlayerHelper;
 import cc.baka9.catseedlogin.common.i18n.MessageKey;
 import cc.baka9.catseedlogin.common.util.PasswordHelper;
+import cc.baka9.catseedlogin.common.util.TabCompleteUtil;
 import cc.baka9.catseedlogin.common.util.ValidationUtil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -20,14 +27,48 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-public class CommandCatSeedLogin implements CommandExecutor {
+public class CommandCatSeedLogin implements CommandExecutor, TabCompleter {
+
+  public static final String PERMISSION = "catseedlogin.command.catseedlogin";
+
+  /** 所有管理子命令，执行分发与 TAB 补全共用同一份数据源。 */
+  public static final List<String> SUB_COMMANDS =
+      Collections.unmodifiableList(
+          Arrays.asList(
+              "reload",
+              "setPwd",
+              "delPlayer",
+              "setIpCountLimit",
+              "setIpRegCountLimit",
+              "setIdLength",
+              "setReenterInterval",
+              "setAutoKick",
+              "setSpawnLocation",
+              "limitChineseID",
+              "bedrockLoginBypass",
+              "LoginwiththesameIP",
+              "beforeLoginNoDamage",
+              "afterLoginBack",
+              "canTpSpawnLocation",
+              "deathStateQuitRecordLocation",
+              "commandWhiteListInfo",
+              "commandWhiteListAdd",
+              "commandWhiteListDel",
+              "loopbackLoginBypass",
+              "beforeLoginAllowChat",
+              "blindingBeforeLogin"));
+
   @Override
   public boolean onCommand(CommandSender sender, Command command, String lable, String[] args) {
     return reload(sender, args)
         || setPwd(sender, args)
         || delPlayer(sender, args)
+        || loopbackLoginBypass(sender, args)
+        || beforeLoginAllowChat(sender, args)
+        || blindingBeforeLogin(sender, args)
         || setIpCountLimit(sender, args)
         || limitChineseID(sender, args)
         || bedrockLoginBypass(sender, args)
@@ -44,6 +85,53 @@ public class CommandCatSeedLogin implements CommandExecutor {
         || autoKick(sender, args)
         || setIpRegCountLimit(sender, args)
         || deathStateQuitRecordLocation(sender, args);
+  }
+
+  // ---- Tab Complete ----
+
+  @Override
+  public List<String> onTabComplete(
+      CommandSender sender, Command command, String alias, String[] args) {
+    if (!sender.hasPermission(PERMISSION)) {
+      return Collections.emptyList();
+    }
+    if (args.length == 1) {
+      return TabCompleteUtil.filter(SUB_COMMANDS, args[0]);
+    }
+    if (args.length == 2) {
+      String sub = args[0].toLowerCase();
+      if ("delplayer".equals(sub) || "setpwd".equals(sub)) {
+        return TabCompleteUtil.filter(registeredAndOnlinePlayerNames(), args[1]);
+      }
+      if ("commandwhitelistdel".equals(sub)) {
+        return TabCompleteUtil.filter(commandWhiteListRegexes(), args[1]);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /** 在线玩家名优先，其后补充数据库中已注册的玩家名。 */
+  private static List<String> registeredAndOnlinePlayerNames() {
+    Set<String> names = new LinkedHashSet<>();
+    Bukkit.getOnlinePlayers().forEach(p -> names.add(p.getName()));
+    if (Cache.isLoaded) {
+      Cache.getAllLoginPlayer()
+          .forEach(
+              lp -> {
+                if (lp != null && lp.getName() != null) {
+                  names.add(lp.getName());
+                }
+              });
+    }
+    return new ArrayList<>(names);
+  }
+
+  private static List<String> commandWhiteListRegexes() {
+    List<Pattern> whiteList = Config.Settings.CommandWhiteList;
+    if (whiteList == null || whiteList.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return whiteList.stream().map(Pattern::toString).collect(Collectors.toList());
   }
 
   // ---- Helper: Boolean Toggle ----
@@ -152,6 +240,39 @@ public class CommandCatSeedLogin implements CommandExecutor {
             () -> Config.Settings.LoginwiththesameIP,
             v -> Config.Settings.LoginwiththesameIP = v,
             "同IP玩家登录跳过"));
+  }
+
+  private boolean loopbackLoginBypass(CommandSender sender, String[] args) {
+    return toggle(
+        sender,
+        args,
+        "loopbackLoginBypass",
+        new BoolSetting(
+            () -> Config.Settings.LoopbackLoginBypass,
+            v -> Config.Settings.LoopbackLoginBypass = v,
+            "本地回环地址登录跳过"));
+  }
+
+  private boolean beforeLoginAllowChat(CommandSender sender, String[] args) {
+    return toggle(
+        sender,
+        args,
+        "beforeLoginAllowChat",
+        new BoolSetting(
+            () -> Config.Settings.BeforeLoginAllowChat,
+            v -> Config.Settings.BeforeLoginAllowChat = v,
+            "登陆之前允许发消息"));
+  }
+
+  private boolean blindingBeforeLogin(CommandSender sender, String[] args) {
+    return toggle(
+        sender,
+        args,
+        "blindingBeforeLogin",
+        new BoolSetting(
+            () -> Config.Settings.BlindingBeforeLogin,
+            v -> Config.Settings.BlindingBeforeLogin = v,
+            "登陆之前失明效果"));
   }
 
   // ---- Number Settings ----

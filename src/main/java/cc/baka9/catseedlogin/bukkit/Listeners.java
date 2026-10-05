@@ -87,6 +87,7 @@ public class Listeners implements Listener {
 
   @EventHandler
   public void onPlayerChat(AsyncPlayerChatEvent event) {
+    if (Config.Settings.BeforeLoginAllowChat) return;
     Player player = event.getPlayer();
     if (playerIsNotMinecraftPlayer(player) || LoginPlayerHelper.isLogin(player.getName())) return;
     event.setCancelled(true);
@@ -226,6 +227,15 @@ public class Listeners implements Listener {
     Player player = event.getPlayer();
     if (Config.Settings.BedrockLoginBypass && LoginPlayerHelper.isFloodgatePlayer(player)) {
       player.sendMessage(Config.Language.BEDROCK_LOGIN_BYPASS);
+      return;
+    }
+    if (Config.Settings.LoopbackLoginBypass && LoginPlayerHelper.isLoopbackPlayer(player)) {
+      LoginPlayer lp = Cache.getIgnoreCase(player.getName());
+      if (lp != null) {
+        LoginPlayerHelper.add(lp);
+      }
+      player.sendMessage(Config.Language.LOOPBACK_LOGIN_BYPASS);
+      teleportToLastLocation(player);
       return;
     }
     if (Config.Settings.LoginwiththesameIP && LoginPlayerHelper.recordCurrentIP(player)) {
