@@ -71,25 +71,45 @@ public final class ConfigMigration {
   /**
    * 将配置中仍存在的旧路径迁移到新路径。
    *
+   * <p>分两步执行：先把旧路径的值全部读出来缓存，再按对照表写回新路径。
+   * 读与写分开可以避免边遍历边修改配置导致的结果依赖遍历顺序。
+   *
    * @return 配置是否发生了改动（需要回写文件）
    */
   public static boolean migrate(YamlConfiguration config) {
+    Map<String, Object> legacyValues = readLegacyValues(config);
+    if (legacyValues.isEmpty()) {
+      return removeEmptySections(config);
+    }
+
+    // 先清掉旧节点，再写入新路径
+    for (String oldPath : legacyValues.keySet()) {
+      config.set(oldPath, null);
+    }
     int moved = 0;
     for (Map.Entry<String, String> entry : LEGACY_PATHS.entrySet()) {
-      String oldPath = entry.getKey();
+      if (!legacyValues.containsKey(entry.getKey())) {
+        continue;
+      }
+      config.set(entry.getValue(), legacyValues.get(entry.getKey()));
+      moved++;
+    }
+
+    boolean changed = removeEmptySections(config) || moved > 0;
+    LOGGER.log(Level.INFO, "已将 {0} 个旧配置路径迁移到新结构，旧路径已自动移除。", moved);
+    return changed;
+  }
+
+  /** 按对照表把配置文件里现存的旧路径值缓存下来，后续迁移只依赖这份快照。 */
+  private static Map<String, Object> readLegacyValues(YamlConfiguration config) {
+    Map<String, Object> values = new LinkedHashMap<>();
+    for (String oldPath : LEGACY_PATHS.keySet()) {
       if (!config.contains(oldPath)) {
         continue;
       }
-      config.set(entry.getValue(), config.get(oldPath));
-      config.set(oldPath, null);
-      moved++;
+      values.put(oldPath, config.get(oldPath));
     }
-    boolean changed = removeEmptySections(config) || moved > 0;
-    if (moved > 0) {
-      LOGGER.log(
-          Level.INFO, "已将 {0} 个旧配置路径迁移到新结构，旧路径已自动移除。", moved);
-    }
-    return changed;
+    return values;
   }
 
   /** 清理迁移后残留的空节点，避免留下无意义的 {@code same-ip-login: {}}。 */
